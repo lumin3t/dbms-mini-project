@@ -11,6 +11,7 @@ import DoctorsPage from './pages/DoctorsPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import UploadsPage from './pages/UploadsPage';
 import Navbar from './components/Navbar';
+import PatientProfilePage from './pages/PatientProfilePage';
 
 // --- Simple Auth Hook ---
 const useAuth = () => {
@@ -55,6 +56,7 @@ export default function App() {
                     {/* Protected Routes */}
                     <Route path="/dashboard" element={<ProtectedRoute element={DashboardPage} auth={auth} />} />
                     <Route path="/patients" element={<ProtectedRoute element={PatientsPage} auth={auth} />} />
+                    <Route path="/patients/:id" element={<ProtectedRoute element={PatientProfilePage} auth={auth} />} />
                     <Route path="/doctors" element={<ProtectedRoute element={DoctorsPage} auth={auth} />} />
                     <Route path="/appointments" element={<ProtectedRoute element={AppointmentsPage} auth={auth} />} />
                     <Route path="/uploads" element={<ProtectedRoute element={UploadsPage} auth={auth} />} />

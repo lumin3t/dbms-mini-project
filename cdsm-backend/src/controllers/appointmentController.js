@@ -53,6 +53,31 @@ exports.getAppointmentById = async (req, res) => {
         res.status(500).json({ message: 'Database error fetching appointment.' });
     }
 };
+// READ Appointments by Patient ID (GET /api/patients/:id/appointments)
+exports.getAppointmentsByPatientId = async (req, res) => {
+    const patientId = req.params.id;
+    
+    const sql = `
+        SELECT 
+            a.appointment_id, 
+            a.appointment_time, 
+            a.reason, 
+            a.status,
+            d.first_name AS doctor_first_name,
+            d.last_name AS doctor_last_name
+        FROM appointment a
+        JOIN doctor d ON a.doctor_id = d.doctor_id
+        WHERE a.patient_id = ?
+        ORDER BY a.appointment_time DESC`;
+
+    try {
+        const [appointments] = await db.query(sql, [patientId]);
+        res.status(200).json(appointments);
+    } catch (error) {
+        console.error("Error fetching patient appointments:", error);
+        res.status(500).json({ message: 'Database error fetching appointments.' });
+    }
+};
 
 // UPDATE Appointment (PUT /api/appointments/:id)
 exports.updateAppointment = async (req, res) => {
