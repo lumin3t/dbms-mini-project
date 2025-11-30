@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Navigate } from 'react-router-dom';
+import '../index.css';
 
 const API_URL = 'http://localhost:5000/api/admin/login';
 
@@ -24,46 +25,54 @@ const LoginPage = ({ auth }) => {
             auth.login(response.data.token); 
         } catch (err) {
             console.error(err);
+            // This error handling relies on the CSS class 'login-error'
             setError(err.response?.data?.message || 'Login failed. Check server status.');
         }
     };
 
     return (
-        <div style={styles.container}>
-            <h2>Admin Login</h2>
-            <form onSubmit={handleSubmit} style={styles.form}>
+        // 🚨 FIX 1: Replace styles.container with CSS classes 🚨
+        <div className="login-container card-shadow">
+            <h2 className="login-header">Admin Login</h2>
+            
+            {/* 🚨 FIX 2: Replace styles.form with CSS class 🚨 */}
+            <form onSubmit={handleSubmit} className="login-form">
+                
+                {/* 🚨 FIX 3: Replace styles.input with CSS class 🚨 */}
                 <input 
                     type="email" 
                     placeholder="Email" 
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)} 
                     required 
-                    style={styles.input}
+                    className="form-control"
                 />
+                
+                {/* 🚨 FIX 4: Replace styles.input with CSS class 🚨 */}
                 <input 
                     type="password" 
                     placeholder="Password" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
                     required 
-                    style={styles.input}
+                    className="form-control"
                 />
-                <button type="submit" style={styles.button}>Login</button>
+                
+                {/* 🚨 FIX 5: Replace styles.button with CSS classes 🚨 */}
+                <button type="submit" className="btn btn-primary">Sign In</button>
             </form>
-            {error && <p style={styles.error}>{error}</p>}
-            <p style={{ marginTop: '20px', fontSize: '12px' }}>
+            
+            {/* 🚨 FIX 6: Use CSS class for error message 🚨 */}
+            {error && <p className="login-error">{error}</p>}
+            
+            {/* 🚨 FIX 7: Use CSS class for hint text 🚨 */}
+            <p className="login-hint">
                 Use: test@admin.com / securepassword123 (from backend registration)
             </p>
         </div>
     );
 };
 
-const styles = {
-    container: { maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', boxShadow: '2px 2px 10px rgba(0,0,0,0.1)' },
-    form: { display: 'flex', flexDirection: 'column', gap: '15px' },
-    input: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px' },
-    button: { padding: '10px', backgroundColor: '#5cb85c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
-    error: { color: 'red', marginTop: '10px' }
-};
+// The commented-out styles block is correctly removed.
 
 export default LoginPage;

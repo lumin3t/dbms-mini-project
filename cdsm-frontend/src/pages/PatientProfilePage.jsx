@@ -1,16 +1,50 @@
 // src/pages/PatientProfilePage.jsx
 
+import '../index.css';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// 🚨 MODIFIED IMPORTS: These now correctly point to the functional components 🚨
+import { 
+    ArrowLeft, 
+    CalendarPlus, 
+    Upload, 
+    Activity, 
+    CheckCircle,
+    AlertTriangle,
+    Stethoscope,
+    FileText,
+    Clock
+} from 'lucide-react';
 import AppointmentQuickAddModal from '../components/AppointmentQuickAddModal';
 import DocumentQuickUploadModal from '../components/DocumentQuickUploadModal';
 
 const API_BASE = 'http://localhost:5000/api/patients';
 
+// Helper to determine color based on risk level
+const getRiskColor = (score) => {
+    if (score >= 70) return '#ef4444'; // High Risk (Red)
+    if (score >= 40) return '#f59e0b'; // Moderate Risk (Yellow/Orange)
+    return '#10b981'; // Low Risk (Green)
+};
+
+const getAdherenceColor = (status) => {
+    if (status === 'Poor') return '#ef4444';
+    if (status === 'Moderate') return '#f59e0b';
+    return '#10b981';
+};
+
+const getStatusColor = (status) => {
+    switch (status) {
+        case 'Completed': return '#10b981'; // Green
+        case 'Cancelled': return '#ef4444'; // Red
+        case 'Scheduled': return '#3b82f6'; // Blue (Upcoming)
+        default: return '#64748b'; 
+    }
+};
+
+// --- PatientProfilePage Component ---
 const PatientProfilePage = ({ auth }) => {
-    const { id } = useParams(); // Get patient ID from URL
+    const { id } = useParams();
     const navigate = useNavigate();
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -39,57 +73,198 @@ const PatientProfilePage = ({ auth }) => {
         }
     };
 
-    if (loading) return <div style={styles.padding}>Loading Patient Profile...</div>;
-    if (error) return <div style={{ ...styles.padding, color: 'red' }}>Error: {error}</div>;
-    if (!history) return <div style={styles.padding}>Patient data not available.</div>;
+    // Renders loading/error state
+    if (loading) return (
+        <div className="container" style={{textAlign: 'center', padding: '60px 20px'}}>
+            <div style={{fontSize: '1.1em', color: '#64748b'}}>Loading Patient Profile...</div>
+        </div>
+    );
+    
+    if (error) return (
+        <div className="container">
+            <div className="error-message" style={{
+                background: 'rgba(239, 68, 68, 0.05)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '12px',
+                padding: '20px',
+                color: '#ef4444',
+                textAlign: 'center',
+                margin: '20px 0'
+            }}>
+                <AlertTriangle size={24} style={{marginBottom: '10px'}} />
+                <div>Error: {error}</div>
+            </div>
+        </div>
+    );
+    
+    if (!history) return (
+        <div className="container" style={{textAlign: 'center', padding: '60px 20px'}}>
+            <div style={{fontSize: '1.1em', color: '#64748b'}}>Patient data not available.</div>
+        </div>
+    );
 
-    const { patient, appointments, documents, conditions } = history;
+    // Safely destructure synthesis with a default structure
+    const { 
+        patient, 
+        appointments, 
+        documents, 
+        conditions, 
+        synthesis = { riskScore: 'N/A', adherenceStatus: 'N/A' }
+    } = history;
 
     const formatDate = (dateStr) => dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A';
+    const formatTime = (dateStr) => dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A';
 
     return (
-        <div style={styles.padding}>
-            <button onClick={() => navigate('/patients')} style={styles.backButton}>&larr; Back to Patient List</button>
+        <div className="container">
+            {/* Back Button */}
+            <button 
+                onClick={() => navigate('/patients')} 
+                className="btn btn-secondary"
+                style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '30px'}}
+            >
+                <ArrowLeft size={18} />
+                Back to Patient List
+            </button>
             
-            <h1 style={styles.header}>Patient: {patient.first_name} {patient.last_name}</h1>
-            <p style={styles.subheader}>ID: {patient.patient_id} | DOB: {formatDate(patient.date_of_birth)}</p>
+            {/* Patient Header */}
+            <div style={{marginBottom: '40px'}}>
+                <h1 className="profile-header">{patient.first_name} {patient.last_name}</h1>
+                <p className="profile-subheader">
+                    Patient ID: {patient.patient_id} • DOB: {formatDate(patient.date_of_birth)}
+                </p>
+            </div>
+
+            {/* Synthesis Metrics Display */}
+            <div className="summary-grid" style={{ marginBottom: '40px', gridTemplateColumns: '1fr 1fr' }}>
+                <Card 
+                    title="Risk Assessment Score" 
+                    value={synthesis.riskScore} 
+                    icon={<Activity size={24} />} 
+                    color={getRiskColor(synthesis.riskScore || 0)}
+                    isHighlight={synthesis.riskScore >= 40}
+                />
+                
+                <Card 
+                    title="Adherence Status" 
+                    value={synthesis.adherenceStatus} 
+                    icon={<CheckCircle size={24} />} 
+                    color={getAdherenceColor(synthesis.adherenceStatus)}
+                    isHighlight={synthesis.adherenceStatus === 'Poor'}
+                />
+            </div>
 
             {/* Quick Actions */}
-            <div style={styles.quickActions}>
-                <button onClick={() => setShowApptModal(true)} style={styles.actionButton}>➕ New Appointment</button>
-                <button onClick={() => setShowDocModal(true)} style={styles.actionButton}>⬆️ Upload Document</button>
+            <div className="profile-quick-actions">
+                <button 
+                    onClick={() => setShowApptModal(true)} 
+                    className="btn btn-primary"
+                    style={{display: 'flex', alignItems: 'center', gap: '8px'}}
+                >
+                    <CalendarPlus size={18} />
+                    New Appointment
+                </button>
+                <button 
+                    onClick={() => setShowDocModal(true)} 
+                    className="btn btn-highlight"
+                    style={{display: 'flex', alignItems: 'center', gap: '8px'}}
+                >
+                    <Upload size={18} />
+                    Upload Document
+                </button>
             </div>
             
-            <div style={styles.gridContainer}>
-                {/* --- 1. Medical Conditions --- */}
-                <Section title="Medical Conditions" style={styles.sectionLarge}>
+            {/* Grid Container for History Sections */}
+            <div className="profile-grid-container">
+                {/* Medical Conditions */}
+                <Section title="Medical Conditions" icon={<Stethoscope size={20} />} className="section-large">
                     {conditions.length > 0 ? conditions.map((c, i) => (
-                        <p key={i}>**{c.condition_name}** ({c.severity}) - Diagnosed: {formatDate(c.diagnosis_date)}</p>
-                    )) : <p>No recorded medical conditions.</p>}
+                        <div key={i} className="section-content-item">
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%'}}>
+                                <div>
+                                    <strong style={{color: 'var(--color-text-primary)'}}>{c.condition_name}</strong>
+                                    <div style={{fontSize: '0.9em', color: 'var(--color-text-light)', marginTop: '4px'}}>
+                                        Severity: {c.severity} • Diagnosed: {formatDate(c.diagnosis_date)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )) : (
+                        <div style={{textAlign: 'center', padding: '20px', color: 'var(--color-text-light)'}}>
+                            No recorded medical conditions
+                        </div>
+                    )}
                 </Section>
 
-                {/* --- 2. Appointments List --- */}
-                <Section title={`Appointments (${appointments.length})`} style={styles.sectionLarge}>
+                {/* Appointments List */}
+                <Section title={`Appointments (${appointments.length})`} icon={<Clock size={20} />} className="section-large">
                     {appointments.length > 0 ? appointments.map(a => (
-                        <div key={a.appointment_id} style={styles.apptItem}>
-                            <span style={styles.apptTime}>{formatDate(a.appointment_time)} @ {new Date(a.appointment_time).toLocaleTimeString()}</span>
-                            <span style={{ color: getStatusColor(a.status) }}>**{a.status}**</span>
-                            <span>Dr. {a.doctor_lname} ({a.reason})</span>
+                        <div key={a.appointment_id} className="appt-item">
+                            <div className="appt-time">
+                                {formatDate(a.appointment_time)}
+                                <div style={{fontSize: '0.85em', color: 'var(--color-text-light)'}}>
+                                    {formatTime(a.appointment_time)}
+                                </div>
+                            </div>
+                            <span 
+                                style={{ 
+                                    color: getStatusColor(a.status), 
+                                    fontWeight: '600',
+                                    fontSize: '0.9em',
+                                    padding: '4px 12px',
+                                    background: getStatusColor(a.status) + '15',
+                                    borderRadius: '20px'
+                                }}
+                            >
+                                {a.status}
+                            </span>
+                            <div className="appt-doctor">
+                                <div style={{fontWeight: '600', color: 'var(--color-text-primary)'}}>
+                                    Dr. {a.doctor_lname}
+                                </div>
+                                <div style={{fontSize: '0.85em', color: 'var(--color-text-light)'}}>
+                                    {a.reason}
+                                </div>
+                            </div>
                         </div>
-                    )) : <p>No appointment history.</p>}
+                    )) : (
+                        <div style={{textAlign: 'center', padding: '20px', color: 'var(--color-text-light)'}}>
+                            No appointment history
+                        </div>
+                    )}
                 </Section>
                 
-                {/* --- 3. Uploaded Files --- */}
-                <Section title={`Uploaded Files (${documents.length})`} style={styles.sectionSmall}>
+                {/* Uploaded Files */}
+                <Section title={`Documents (${documents.length})`} icon={<FileText size={20} />} className="section-small">
                     {documents.length > 0 ? documents.map(d => (
-                        <p key={d.document_id} style={styles.docItem}>
-                            {d.title} ({d.document_type}) - <a href={`http://localhost:5000/${d.file_path}`} target="_blank" rel="noopener noreferrer">View</a>
-                        </p>
-                    )) : <p>No files uploaded.</p>}
+                        <div key={d.document_id} className="section-content-item doc-item">
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
+                                <div>
+                                    <strong style={{color: 'var(--color-text-primary)'}}>{d.title}</strong>
+                                    <div style={{fontSize: '0.85em', color: 'var(--color-text-light)', marginTop: '2px'}}>
+                                        {d.document_type}
+                                    </div>
+                                </div>
+                                <a 
+                                    href={`http://localhost:5000/${d.file_path}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="btn btn-secondary"
+                                    style={{padding: '6px 12px', fontSize: '0.85em'}}
+                                >
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                    )) : (
+                        <div style={{textAlign: 'center', padding: '20px', color: 'var(--color-text-light)'}}>
+                            No files uploaded
+                        </div>
+                    )}
                 </Section>
             </div>
 
-            {/* 🚨 MODALS RENDERED HERE 🚨 */}
+            {/* Modals */}
             {showApptModal && (
                 <AppointmentQuickAddModal 
                     onClose={() => setShowApptModal(false)} 
@@ -110,39 +285,44 @@ const PatientProfilePage = ({ auth }) => {
     );
 };
 
-// --- Helper Components and Styles (Unchanged) ---
-const Section = ({ title, children, style }) => (
-    <div style={{ ...styles.section, ...style }}>
-        <h2 style={styles.sectionTitle}>{title}</h2>
-        <div style={styles.sectionContent}>{children}</div>
+// Section Component with Icon Support
+const Section = ({ title, children, className, icon }) => ( 
+    <div className={`profile-section ${className}`}> 
+        <h2 className="section-title" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+            {icon}
+            {title}
+        </h2>
+        <div className="section-content">{children}</div>
     </div>
 );
 
-const getStatusColor = (status) => {
-    switch (status) {
-        case 'Completed': return '#28a745'; // Green
-        case 'Cancelled': return '#dc3545'; // Red
-        case 'Scheduled': return '#007bff'; // Blue (Upcoming)
-        default: return '#6c757d'; 
-    }
-};
-
-const styles = {
-    padding: { padding: '20px' },
-    backButton: { marginBottom: '20px', padding: '8px 15px', background: '#f8f9fa', border: '1px solid #ccc', cursor: 'pointer' },
-    header: { fontSize: '2.5em', marginBottom: '5px' },
-    subheader: { fontSize: '1.1em', color: '#666', marginBottom: '20px' },
-    quickActions: { display: 'flex', gap: '15px', marginBottom: '30px' },
-    actionButton: { padding: '10px 20px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' },
-    gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px' },
-    section: { border: '1px solid #ddd', borderRadius: '8px', padding: '20px' },
-    sectionLarge: { gridColumn: 'span 2' },
-    sectionSmall: { gridColumn: 'span 2' },
-    sectionTitle: { fontSize: '1.4em', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' },
-    sectionContent: { display: 'flex', flexDirection: 'column', gap: '10px' },
-    apptItem: { display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dotted #f0f0f0' },
-    apptTime: { fontWeight: 'bold', minWidth: '150px' },
-    docItem: { borderBottom: '1px dotted #f0f0f0', paddingBottom: '5px' }
-};
+// Updated Card Component for Light Theme
+const Card = ({ title, value, icon, color, isHighlight }) => (
+    <div className={`summary-card ${isHighlight ? 'highlight-card' : ''}`}>
+        <div 
+            className="card-icon-container" 
+            style={{ 
+                background: `linear-gradient(135deg, ${color} 0%, ${color}99 100%)`
+            }}
+        >
+            {icon}
+        </div>
+        <div className="card-content">
+            <p className="card-title">{title}</p>
+            <h3 
+                className="card-value" 
+                style={{ 
+                    color: color,
+                    fontSize: typeof value === 'number' ? '2.5em' : '1.8em'
+                }}
+            >
+                {value}
+                {typeof value === 'number' && title.includes('Score') && (
+                    <span style={{fontSize: '0.6em', color: 'var(--color-text-light)', marginLeft: '4px'}}>/100</span>
+                )}
+            </h3>
+        </div>
+    </div>
+);
 
 export default PatientProfilePage;

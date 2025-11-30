@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../index.css'; // Make sure this is imported
 
 const API_APPOINTMENTS = 'http://localhost:5000/api/appointments';
 const API_DOCTORS = 'http://localhost:5000/api/doctors';
@@ -65,20 +66,29 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
     };
 
     return (
-        <div style={styles.backdrop}>
-            <div style={styles.modal}>
-                <div style={styles.modalHeader}>
+        // 🚨 FIX 1: Use className="modal-backdrop" 🚨
+        <div className="modal-backdrop">
+            {/* 🚨 FIX 2: Use className="modal-content card-shadow" 🚨 */}
+            <div className="modal-content card-shadow">
+                
+                {/* 🚨 FIX 3: Use className="modal-header" 🚨 */}
+                <div className="modal-header">
                     <h3>New Appointment for Patient ID {patientId}</h3>
-                    <button onClick={onClose} style={styles.closeButton}>X</button>
+                    
+                    {/* 🚨 FIX 4: Use className="modal-close-btn" */}
+                    <button onClick={onClose} className="modal-close-btn">X</button>
                 </div>
                 
-                <form onSubmit={handleCreateAppt} style={styles.form}>
+                {/* 🚨 FIX 5: Use className="modal-form" */}
+                <form onSubmit={handleCreateAppt} className="modal-form">
+                    
+                    {/* 🚨 FIX 6: Use className="form-control" */}
                     <select 
                         name="doctor_id" 
                         value={newAppt.doctor_id} 
                         onChange={handleInputChange} 
                         required 
-                        style={styles.input}
+                        className="form-control"
                     >
                         <option value="">Select Doctor (Required)</option>
                         {doctors.map(d => (
@@ -88,84 +98,32 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
                         ))}
                     </select>
 
+                    {/* 🚨 FIX 7: Use className="form-control" */}
                     <input 
                         name="appointment_time" 
                         type="datetime-local" 
                         value={newAppt.appointment_time} 
                         onChange={handleInputChange} 
                         required 
-                        style={styles.input} 
+                        className="form-control"
                     />
                     
+                    {/* 🚨 FIX 8: Use className="form-control" */}
                     <textarea 
                         name="reason" 
                         placeholder="Reason for appointment" 
                         value={newAppt.reason} 
                         onChange={handleInputChange} 
-                        style={styles.input} 
+                        className="form-control" 
                     />
                     
-                    <button type="submit" style={styles.saveButton}>Schedule Appointment</button>
+                    {/* 🚨 FIX 9: Use className="btn btn-primary" */}
+                    <button type="submit" className="btn btn-primary">Schedule Appointment</button>
                     {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'red' : 'green', marginTop: '10px' }}>{statusMessage}</p>}
                 </form>
             </div>
         </div>
     );
 };
-// Shared Styles for Modals
 
-const styles = {
-    backdrop: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-    },
-    modal: {
-        backgroundColor: 'white',
-        padding: '30px',
-        borderRadius: '10px',
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
-        width: '90%',
-        maxWidth: '450px',
-    },
-    modalHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-        borderBottom: '1px solid #eee',
-        paddingBottom: '10px',
-    },
-    closeButton: {
-        background: 'none',
-        border: 'none',
-        fontSize: '1.2em',
-        cursor: 'pointer',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-    },
-    input: {
-        padding: '10px',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-    },
-    saveButton: {
-        padding: '10px',
-        backgroundColor: '#007bff',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-};
 export default AppointmentQuickAddModal;

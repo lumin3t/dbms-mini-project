@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../index.css'; // Global styles import
 
 const API_APPOINTMENTS = 'http://localhost:5000/api/appointments';
 const API_DOCTORS = 'http://localhost:5000/api/doctors';
@@ -19,6 +20,8 @@ const AppointmentsPage = ({ auth }) => {
         status: 'Scheduled', // Default to showing only upcoming appointments
         date: new Date().toISOString().split('T')[0] // Default to Today
     });
+    // State to hold any network/data error message
+    const [networkError, setNetworkError] = useState(null);
 
     useEffect(() => {
         if (auth.token) {
@@ -31,7 +34,9 @@ const AppointmentsPage = ({ auth }) => {
     }, [allAppointments, filters]); // Re-filter whenever source data or filters change
 
     const fetchInitialData = async () => {
+        setNetworkError(null);
         try {
+            // Using Promise.all to fetch all necessary data concurrently
             const [apptsRes, docsRes, patientsRes] = await Promise.all([
                 axios.get(API_APPOINTMENTS, { headers: { Authorization: `Bearer ${auth.token}` } }),
                 axios.get(API_DOCTORS, { headers: { Authorization: `Bearer ${auth.token}` } }),
@@ -44,6 +49,7 @@ const AppointmentsPage = ({ auth }) => {
             setLoading(false);
         } catch (err) {
             console.error(err);
+            setNetworkError('Failed to load initial data. Check API endpoints or token.');
             setLoading(false);
         }
     };
@@ -70,6 +76,7 @@ const AppointmentsPage = ({ auth }) => {
         if (filters.searchPatient) {
             const searchLower = filters.searchPatient.toLowerCase();
             tempAppts = tempAppts.filter(a => 
+                // Assumes appointments data has patient_first_name and patient_last_name joined in the backend
                 (a.patient_first_name + ' ' + a.patient_last_name).toLowerCase().includes(searchLower)
             );
         }
@@ -84,30 +91,36 @@ const AppointmentsPage = ({ auth }) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
-    if (loading) return <div style={styles.padding}>Loading Appointments...</div>;
+    // 🚨 FIX: Replace styles.padding with className="container" and use loading state 🚨
+    if (loading) return <div className="container">Loading Appointments...</div>;
+    // Handle network errors
+    if (networkError) return <div className="container login-error">Error: {networkError}</div>;
+
 
     return (
-        <div style={styles.padding}>
-            <h1>📅 Appointments Calendar</h1>
+        // 🚨 FIX: Replace styles.padding with className="container" 🚨
+        <div className="container">
+            <h1>Appointments Calendar</h1>
             
             {/* --- Filtering Controls --- */}
-            <div style={styles.filtersContainer}>
+            {/* 🚨 FIX: Replace styles.filtersContainer, styles.input with classNames 🚨 */}
+            <div className="filters-container card-shadow">
                 <input 
                     type="date" 
                     name="date" 
                     value={filters.date} 
                     onChange={handleFilterChange} 
-                    style={styles.input}
+                    className="form-control"
                 />
 
-                <select name="doctorId" value={filters.doctorId} onChange={handleFilterChange} style={styles.input}>
+                <select name="doctorId" value={filters.doctorId} onChange={handleFilterChange} className="form-control">
                     <option value="">Filter by Doctor</option>
                     {doctors.map(d => (
                         <option key={d.doctor_id} value={d.doctor_id}>Dr. {d.last_name} ({d.specialization})</option>
                     ))}
                 </select>
 
-                <select name="status" value={filters.status} onChange={handleFilterChange} style={styles.input}>
+                <select name="status" value={filters.status} onChange={handleFilterChange} className="form-control">
                     <option value="">All Statuses</option>
                     <option value="Scheduled">Scheduled (Upcoming)</option>
                     <option value="Completed">Completed</option>
@@ -120,26 +133,29 @@ const AppointmentsPage = ({ auth }) => {
                     placeholder="Search Patient Name..."
                     value={filters.searchPatient}
                     onChange={handleFilterChange}
-                    style={styles.input}
+                    className="form-control"
                 />
             </div>
 
             {/* --- Appointments List/Timeline --- */}
-            <h3 style={{ marginTop: '30px' }}>Showing {filteredAppointments.length} Appointments</h3>
-            <div style={styles.timeline}>
+            {/* 🚨 FIX: Remove timeline style and add margin 🚨 */}
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Showing {filteredAppointments.length} Appointments</h3>
+            
+            {/* 🚨 FIX: Use a class for the timeline wrapper 🚨 */}
+            <div className="appointment-timeline"> 
                 {filteredAppointments.length > 0 ? (
                     filteredAppointments.map(appt => (
                         <AppointmentCard key={appt.appointment_id} appt={appt} />
                     ))
                 ) : (
-                    <p>No appointments match the current filters.</p>
+                    <p style={{color: 'var(--color-secondary)'}}>No appointments match the current filters.</p>
                 )}
             </div>
         </div>
     );
 };
 
-// --- Appointment Card Component ---
+// --- Appointment Card Component (Logic remains external and correct) ---
 const getStatusColor = (status) => {
     switch (status) {
         case 'Completed': return '#28a745'; // Green
@@ -155,28 +171,23 @@ const AppointmentCard = ({ appt }) => {
     const statusColor = getStatusColor(appt.status);
 
     return (
-        <div style={{ ...styles.card, borderLeft: `5px solid ${statusColor}` }}>
-            <div style={styles.cardTime}>
+        <div 
+            className="appointment-card card-shadow" 
+            style={{ borderLeft: `5px solid ${statusColor}` }}
+        >
+            <div className="card-time">
                 <strong>{time}</strong> <span style={{ color: '#888' }}>({date})</span>
             </div>
-            <div style={styles.cardDetails}>
+            <div className="card-details">
                 <p>Patient: **{appt.patient_first_name} {appt.patient_last_name}**</p>
                 <p>Doctor: Dr. {appt.doctor_last_name}</p>
+                
                 <p style={{ color: statusColor, fontWeight: 'bold', marginTop: '5px' }}>Status: {appt.status}</p>
-                <p style={{ fontSize: '0.9em', color: '#666' }}>Reason: {appt.reason}</p>
+                
+                <p className="card-details-reason">Reason: {appt.reason}</p>
             </div>
         </div>
     );
-};
-
-const styles = {
-    padding: { padding: '20px' },
-    filtersContainer: { display: 'flex', gap: '15px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '20px' },
-    input: { padding: '8px', border: '1px solid #ccc', borderRadius: '4px' },
-    timeline: { display: 'flex', flexDirection: 'column', gap: '15px' },
-    card: { padding: '15px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', backgroundColor: '#fff' },
-    cardTime: { fontSize: '1.1em', marginBottom: '10px', paddingBottom: '5px', borderBottom: '1px dashed #eee' },
-    cardDetails: { fontSize: '0.95em' }
 };
 
 export default AppointmentsPage;

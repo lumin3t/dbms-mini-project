@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../index.css';
 
 const API_URL = 'http://localhost:5000/api/upload';
 
@@ -49,29 +50,44 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
         }
     };
 
+    // src/components/DocumentQuickUploadModal.jsx (Updated return block)
+
+// ... (component logic and imports above)
+
     return (
-        <div style={styles.backdrop}>
-            <div style={styles.modal}>
-                <div style={styles.modalHeader}>
+        // 🚨 FIX 1: Use className="modal-backdrop" 🚨
+        <div className="modal-backdrop">
+            
+            {/* 🚨 FIX 2: Use className="modal-content card-shadow" 🚨 */}
+            <div className="modal-content card-shadow">
+                
+                {/* 🚨 FIX 3: Use className="modal-header" 🚨 */}
+                <div className="modal-header">
                     <h3>Upload Document for Patient ID {patientId}</h3>
-                    <button onClick={onClose} style={styles.closeButton}>X</button>
+                    
+                    {/* 🚨 FIX 4: Use className="modal-close-btn" */}
+                    <button onClick={onClose} className="modal-close-btn">X</button>
                 </div>
                 
-                <form onSubmit={handleUpload} style={styles.form}>
+                {/* 🚨 FIX 5: Use className="modal-form" */}
+                <form onSubmit={handleUpload} className="modal-form">
+                    
+                    {/* 🚨 FIX 6: Use className="form-control" */}
                     <input 
                         name="title" 
                         placeholder="Document Title (e.g., Blood Test Results)" 
                         value={title} 
                         onChange={(e) => setTitle(e.target.value)} 
                         required 
-                        style={styles.input} 
+                        className="form-control"
                     />
                     
+                    {/* 🚨 FIX 7: Use className="form-control" */}
                     <select 
                         name="documentType" 
                         value={documentType} 
                         onChange={(e) => setDocumentType(e.target.value)} 
-                        style={styles.input}
+                        className="form-control"
                     >
                         <option value="Lab Report">Lab Report</option>
                         <option value="Prescription">Prescription</option>
@@ -79,21 +95,26 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
                         <option value="Other">Other</option>
                     </select>
 
+                    {/* 🚨 FIX 8: Use className="form-control" (Note: Border removed via inline style for file input clarity) */}
                     <input 
                         type="file" 
                         onChange={handleFileUpload} 
                         required 
-                        style={{ ...styles.input, border: 'none' }} 
+                        className="form-control"
+                        style={{ border: 'none', paddingLeft: 0 }} /* Adjusting style for file input */
                     />
                     
-                    <button type="submit" style={styles.saveButton}>Upload File</button>
-                    {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'red' : 'green', marginTop: '10px' }}>{statusMessage}</p>}
+                    {/* 🚨 FIX 9: Use className="btn btn-primary" */}
+                    <button type="submit" className="btn btn-primary">Upload File</button>
+                    
+                    {/* Status message remains inline for dynamic coloring */}
+                    {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'var(--color-danger)' : 'var(--color-success)', marginTop: '10px' }}>{statusMessage}</p>}
                 </form>
             </div>
         </div>
     );
 };
-const styles = {
+/*const styles = {
     backdrop: {
         position: 'fixed',
         top: 0,
@@ -146,5 +167,5 @@ const styles = {
         borderRadius: '4px',
         cursor: 'pointer',
     },
-};
+};*/
 export default DocumentQuickUploadModal;

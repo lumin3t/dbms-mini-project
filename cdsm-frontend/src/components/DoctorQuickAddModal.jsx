@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../index.css'; // Global styles are available via import
 
 const API_URL = 'http://localhost:5000/api/doctors';
 
@@ -43,80 +44,37 @@ const DoctorQuickAddModal = ({ onClose, auth, onRefresh }) => {
     };
 
     return (
-        <div style={styles.backdrop}>
-            <div style={styles.modal}>
-                <div style={styles.modalHeader}>
+        // 🚨 FIX 1: Replace styles.backdrop with className="modal-backdrop" 🚨
+        <div className="modal-backdrop">
+            {/* 🚨 FIX 2: Replace styles.modal with className="modal-content card-shadow" 🚨 */}
+            <div className="modal-content card-shadow">
+                
+                {/* 🚨 FIX 3: Replace styles.modalHeader with className="modal-header" 🚨 */}
+                <div className="modal-header">
                     <h3>Quick Add Doctor</h3>
-                    <button onClick={onClose} style={styles.closeButton}>X</button>
+                    
+                    {/* 🚨 FIX 4: Replace styles.closeButton with className="modal-close-btn" */}
+                    <button onClick={onClose} className="modal-close-btn">X</button>
                 </div>
                 
-                <form onSubmit={handleCreateDoctor} style={styles.form}>
-                    <input name="first_name" placeholder="First Name" value={newDoctor.first_name} onChange={handleInputChange} required style={styles.input} />
-                    <input name="last_name" placeholder="Last Name" value={newDoctor.last_name} onChange={handleInputChange} required style={styles.input} />
-                    <input name="specialization" placeholder="Specialization" value={newDoctor.specialization} onChange={handleInputChange} required style={styles.input} />
-                    <input name="email" type="email" placeholder="Email" value={newDoctor.email} onChange={handleInputChange} required style={styles.input} />
-                    <input name="phone" placeholder="Phone" value={newDoctor.phone} onChange={handleInputChange} style={styles.input} />
+                {/* 🚨 FIX 5: Replace styles.form with className="modal-form" */}
+                <form onSubmit={handleCreateDoctor} className="modal-form">
                     
-                    <button type="submit" style={styles.saveButton}>Save Doctor</button>
-                    {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'red' : 'green', marginTop: '10px' }}>{statusMessage}</p>}
+                    {/* 🚨 FIX 6: Replace styles.input with className="form-control" */}
+                    <input name="first_name" placeholder="First Name" value={newDoctor.first_name} onChange={handleInputChange} required className="form-control" />
+                    <input name="last_name" placeholder="Last Name" value={newDoctor.last_name} onChange={handleInputChange} required className="form-control" />
+                    <input name="specialization" placeholder="Specialization" value={newDoctor.specialization} onChange={handleInputChange} required className="form-control" />
+                    <input name="email" type="email" placeholder="Email" value={newDoctor.email} onChange={handleInputChange} required className="form-control" />
+                    <input name="phone" placeholder="Phone" value={newDoctor.phone} onChange={handleInputChange} className="form-control" />
+                    
+                    {/* 🚨 FIX 7: Replace styles.saveButton with className="btn btn-primary" */}
+                    <button type="submit" className="btn btn-primary">Save Doctor</button>
+                    
+                    {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'var(--color-danger)' : 'var(--color-success)', marginTop: '10px' }}>{statusMessage}</p>}
                 </form>
             </div>
         </div>
     );
 };
-const styles = {
-    backdrop: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-    },
-    modal: {
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        width: '400px',
-        padding: '20px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-    },
-    modalHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '15px',
-    },
-    closeButton: {
-        backgroundColor: 'transparent',
-        border: 'none',
-        fontSize: '16px',
-        cursor: 'pointer',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    input: {
-        marginBottom: '10px',
-        padding: '8px',
-        fontSize: '14px',
-        borderRadius: '4px',
-        border: '1px solid #ccc',
-    },
-    saveButton: {
-        padding: '10px',
-        backgroundColor: '#28a745',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-};
 
 export default DoctorQuickAddModal;
-
-   

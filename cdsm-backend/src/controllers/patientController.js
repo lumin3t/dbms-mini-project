@@ -1,7 +1,9 @@
 // src/controllers/patientController.js
 
 const db = require('../db/db.config');
-const { validationResult } = require('express-validator'); // Required for validation check
+const { validationResult } = require('express-validator');
+// Ensure the synthesis utility is imported
+const { calculateRiskScore, getAdherenceStatus } = require('../utils/synthesis.utils'); 
 
 // Reusable validation checker
 const handleValidationErrors = (req, res) => {
@@ -11,6 +13,8 @@ const handleValidationErrors = (req, res) => {
     }
     return null;
 };
+
+// --- CRUD Functions (omitted for brevity, assume they are correct) ---
 
 // CREATE Patient (POST /api/patients)
 exports.createPatient = async (req, res) => {
@@ -30,24 +34,19 @@ exports.createPatient = async (req, res) => {
     }
 };
 
-// src/controllers/patientController.js (Modified getAllPatients)
-
 // READ All Patients (GET /api/patients?search=...)
 exports.getAllPatients = async (req, res) => {
-    // 🚨 NEW: Get search query from URL parameters
     const search = req.query.search;
     
     let sql = 'SELECT patient_id, first_name, last_name, email FROM patient';
     let values = [];
 
     if (search) {
-        // If search is provided, filter by first_name OR last_name
         sql += ' WHERE first_name LIKE ? OR last_name LIKE ?';
-        const searchTerm = `%${search}%`; // Adds wildcards for partial match
+        const searchTerm = `%${search}%`; 
         values = [searchTerm, searchTerm];
     }
     
-    // Optional: Add ORDER BY clause for better display
     sql += ' ORDER BY last_name ASC';
 
     try {
@@ -58,8 +57,6 @@ exports.getAllPatients = async (req, res) => {
         res.status(500).json({ message: 'Database error fetching patients.' });
     }
 };
-
-// ... (Other CRUD functions)
 
 // READ Single Patient (GET /api/patients/:id)
 exports.getPatientById = async (req, res) => {
@@ -77,8 +74,6 @@ exports.getPatientById = async (req, res) => {
 
 // UPDATE Patient (PUT /api/patients/:id)
 exports.updatePatient = async (req, res) => {
-    // Note: For simplicity, validation is minimal here, assuming only partial updates.
-    // In a real app, you'd apply validation to all provided fields.
     const { id } = req.params;
     const fields = req.body;
 
@@ -116,6 +111,10 @@ exports.deletePatient = async (req, res) => {
         res.status(500).json({ message: 'Database error deleting patient.' });
     }
 };
+
+// ------------------------------------------------------------------
+// READ Full Patient History + Synthesis (GET /api/patients/:id/history)
+// ------------------------------------------------------------------
 exports.getPatientHistory = async (req, res) => {
     const { id } = req.params;
     
@@ -125,7 +124,9 @@ exports.getPatientHistory = async (req, res) => {
         if (details.length === 0) {
             return res.status(404).json({ message: 'Patient not found.' });
         }
-
+        
+        // 🚨 FIX: Re-inserting the missing database queries 🚨
+        
         // 2. Appointments List (Joined with Doctor Name)
         const [appointments] = await db.query(`
             SELECT 
@@ -135,7 +136,7 @@ exports.getPatientHistory = async (req, res) => {
             JOIN doctor d ON a.doctor_id = d.doctor_id
             WHERE a.patient_id = ?
             ORDER BY a.appointment_time DESC
-        `, [id]);
+        `, [id]); 
 
         // 3. Uploaded Files
         const [documents] = await db.query(
@@ -148,16 +149,33 @@ exports.getPatientHistory = async (req, res) => {
             'SELECT condition_name, diagnosis_date, severity FROM medical_condition WHERE patient_id = ?', 
             [id]
         );
+        
+        // 5. Aggregate Data for Synthesis
+        const historyData = {
+            patient: details[0],
+            // 'appointments' is now defined from the query above
+            appointments, 
+            conditions,
+        };
 
+        const riskScore = calculateRiskScore(historyData);
+        const adherenceStatus = getAdherenceStatus(historyData);
+        
         res.status(200).json({
             patient: details[0],
             appointments,
             documents,
-            conditions
+            conditions,
+            // 🚨 SYNTHESIS RESULTS 🚨
+            synthesis: {
+                riskScore,
+                adherenceStatus,
+            }
         });
 
     } catch (error) {
-        console.error("Error fetching patient history:", error);
+        // Now logging a more useful message if the crash isn't due to 'appointments' being undefined
+        console.error("Error fetching patient history (Final Catch):", error);
         res.status(500).json({ message: 'Database error fetching patient history.' });
     }
 };

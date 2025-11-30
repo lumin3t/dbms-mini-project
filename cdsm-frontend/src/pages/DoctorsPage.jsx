@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import '../index.css';
+import { Link } from 'react-router-dom';
 const API_URL = 'http://localhost:5000/api/doctors';
 
 const DoctorsPage = ({ auth }) => {
@@ -33,42 +34,47 @@ const DoctorsPage = ({ auth }) => {
     if (loading) return <div>Loading Doctors...</div>;
     if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
-    return (
-        <div>
-            <h1>👨‍⚕️ Doctor Management</h1>
-            <button style={{ padding: '10px', background: '#337ab7', color: 'white', border: 'none', marginBottom: '15px' }}>
+return (
+    // Use container class for padding
+    <div className="container"> 
+        <h1> Doctor Management</h1>
+      
+        <Link to="/dashboard" className="btn btn-primary" style={{ textDecoration: 'none' }}>
                 + Add New Doctor
-            </button>
-            
-            <h3>Registered Doctors ({doctors.length})</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ backgroundColor: '#f2f2f2' }}>
-                        <th style={styles.th}>ID</th>
-                        <th style={styles.th}>Name</th>
-                        <th style={styles.th}>Specialization</th>
-                        <th style={styles.th}>Actions</th>
+        </Link>
+        
+        <h3 style={{ marginTop: '30px' }}>Registered Doctors ({doctors.length})</h3>
+        
+        {/* Use data-table classes for clean, modern table look */}
+        <table className="data-table">
+            <thead>
+                <tr>
+                    <th className="data-table-header">ID</th>
+                    <th className="data-table-header">Name</th>
+                    <th className="data-table-header">Specialization</th>
+                    <th className="data-table-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {doctors.map(d => (
+                    <tr key={d.doctor_id}>
+                        {/* Use table cell class */}
+                        <td className="data-table-cell">{d.doctor_id}</td>
+                        <td className="data-table-cell">{d.first_name} {d.last_name}</td>
+                        <td className="data-table-cell">{d.specialization}</td>
+                        <td className="data-table-cell">[Edit | Delete]</td>
                     </tr>
-                </thead>
-                <tbody>
-                    {doctors.map(d => (
-                        <tr key={d.doctor_id} style={styles.tr}>
-                            <td style={styles.td}>{d.doctor_id}</td>
-                            <td style={styles.td}>{d.first_name} {d.last_name}</td>
-                            <td style={styles.td}>{d.specialization}</td>
-                            <td style={styles.td}>[Edit | Delete]</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+                ))}
+            </tbody>
+        </table>
+    </div>
+);
 };
 
-const styles = {
+/*const styles = {
     th: { border: '1px solid #ddd', padding: '8px', textAlign: 'left' },
     td: { border: '1px solid #ddd', padding: '8px' },
     tr: { '&:nth-child(even)': { backgroundColor: '#f9f9f9' } }
-};
+};*/
 
 export default DoctorsPage;
