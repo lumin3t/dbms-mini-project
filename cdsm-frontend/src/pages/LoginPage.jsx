@@ -66,9 +66,6 @@ const LoginPage = ({ auth }) => {
             {error && <p className="login-error">{error}</p>}
             
             {/* 🚨 FIX 7: Use CSS class for hint text 🚨 */}
-            <p className="login-hint">
-                Use: test@admin.com / securepassword123 (from backend registration)
-            </p>
         </div>
     );
 };
