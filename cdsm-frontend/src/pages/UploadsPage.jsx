@@ -5,7 +5,6 @@ import '../index.css';
 const UploadsPage = () => {
     // src/pages/UploadsPage.jsx (Updated return block)
 
-// Assuming you have imported '../index.css' at the top of this file
 
 return (
     // 🚨 FIX: Replace inline style with className="container" 🚨

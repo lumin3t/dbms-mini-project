@@ -95,7 +95,7 @@ const DashboardPage = ({ auth }) => {
                 </button>
                 <button 
                     onClick={() => setShowDoctorModal(true)} 
-                    className="btn btn-secondary"
+                    className="btn btn-primary"
                     style={{display: 'flex', alignItems: 'center', gap: '8px'}}
                 >
                     <Plus size={18} />

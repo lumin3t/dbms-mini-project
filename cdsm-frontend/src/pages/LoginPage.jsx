@@ -31,14 +31,11 @@ const LoginPage = ({ auth }) => {
     };
 
     return (
-        // 🚨 FIX 1: Replace styles.container with CSS classes 🚨
         <div className="login-container card-shadow">
             <h2 className="login-header">Admin Login</h2>
             
-            {/* 🚨 FIX 2: Replace styles.form with CSS class 🚨 */}
             <form onSubmit={handleSubmit} className="login-form">
                 
-                {/* 🚨 FIX 3: Replace styles.input with CSS class 🚨 */}
                 <input 
                     type="email" 
                     placeholder="Email" 
@@ -58,18 +55,13 @@ const LoginPage = ({ auth }) => {
                     className="form-control"
                 />
                 
-                {/* 🚨 FIX 5: Replace styles.button with CSS classes 🚨 */}
                 <button type="submit" className="btn btn-primary">Sign In</button>
             </form>
             
-            {/* 🚨 FIX 6: Use CSS class for error message 🚨 */}
             {error && <p className="login-error">{error}</p>}
             
-            {/* 🚨 FIX 7: Use CSS class for hint text 🚨 */}
         </div>
     );
 };
-
-// The commented-out styles block is correctly removed.
 
 export default LoginPage;

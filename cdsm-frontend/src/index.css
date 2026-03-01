@@ -126,6 +126,18 @@ h1, h2, h3, h4, strong {
     position: relative;
     overflow: hidden;
 }
+.btn-small {
+    padding: 4px 8px;
+    font-size: 0.85em;
+    border: none;
+    margin: 2px;
+    border-radius: var(--border-radius-base);
+    letter-spacing: 0.5px;
+    transition: all var(--transition-base);
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
 
 .btn::before {
     content: '';

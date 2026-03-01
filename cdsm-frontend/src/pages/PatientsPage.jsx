@@ -1,23 +1,18 @@
-// src/pages/PatientsPage.jsx (UPDATED for Create/Add Patient)
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import '../index.css';
+
 const API_URL = 'http://localhost:5000/api/patients';
 
 const PatientsPage = ({ auth }) => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [isAdding, setIsAdding] = useState(false); // New state for modal/form visibility
-    const [newPatient, setNewPatient] = useState({ 
-        first_name: '', 
-        last_name: '', 
-        date_of_birth: '', 
-        email: '', 
-        phone: '' 
-    });
+    
+    // State for Editing
+    const [editingId, setEditingId] = useState(null);
+    const [editFormData, setEditFormData] = useState({ first_name: '', last_name: '', email: '' });
 
     useEffect(() => {
         if (auth.token) {
@@ -26,7 +21,6 @@ const PatientsPage = ({ auth }) => {
     }, [auth.token]);
 
     const fetchPatients = async () => {
-        setLoading(true);
         try {
             const response = await axios.get(API_URL, {
                 headers: { Authorization: `Bearer ${auth.token}` }
@@ -39,89 +33,111 @@ const PatientsPage = ({ auth }) => {
         }
     };
 
-    const handleInputChange = (e) => {
-        setNewPatient({ ...newPatient, [e.target.name]: e.target.value });
-    };
-
-    const handleCreatePatient = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post(API_URL, newPatient, {
-                headers: { 
-                    Authorization: `Bearer ${auth.token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            // Clear form and refetch data
-            setNewPatient({ first_name: '', last_name: '', date_of_birth: '', email: '', phone: '' });
-            setIsAdding(false);
-            fetchPatients();
-        } catch (err) {
-            alert('Failed to add patient: ' + (err.response?.data?.message || JSON.stringify(err.response?.data?.errors)));
-            console.error(err.response?.data);
+    // --- DELETE HANDLER ---
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this patient?")) {
+            try {
+                await axios.delete(`${API_URL}/${id}`, {
+                    headers: { Authorization: `Bearer ${auth.token}` }
+                });
+                // Filter out the deleted patient from UI immediately
+                setPatients(patients.filter(p => p.patient_id !== id));
+            } catch (err) {
+                alert("Failed to delete patient.");
+            }
         }
     };
 
-    if (loading) return <div style={{ padding: '20px' }}>Loading Patients...</div>;
+    // --- EDIT HANDLERS ---
+    const startEdit = (patient) => {
+        setEditingId(patient.patient_id);
+        setEditFormData({ 
+            first_name: patient.first_name, 
+            last_name: patient.last_name, 
+            email: patient.email 
+        });
+    };
 
-    // src/pages/PatientsPage.jsx (Updated return block)
+    const handleEditChange = (e) => {
+        setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
+    };
 
-// Assuming this component fetches 'patients' array and 'auth' is available
-// Assuming Link is imported from 'react-router-dom'
+    const saveEdit = async (id) => {
+        try {
+            await axios.put(`${API_URL}/${id}`, editFormData, {
+                headers: { Authorization: `Bearer ${auth.token}` }
+            });
+            setEditingId(null);
+            fetchPatients(); // Refresh list
+        } catch (err) {
+            alert("Failed to update patient.");
+        }
+    };
 
-return (
-    // Use container class for padding
-    <div className="container">
-        <h1>Patient Management</h1>
-        
-        <Link to="/dashboard" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                + Add New Patient 
-        </Link>
+    if (loading) return <div className="container">Loading Patients...</div>;
 
-        {error && <div className="login-error" style={{ marginTop: '15px' }}>Error: {error}</div>}
+    return (
+        <div className="container">
+            <h1>Patient Management</h1>
+            <Link to="/dashboard" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                    + Add New Patient
+            </Link>
 
-        <h3 style={{ marginTop: '30px' }}>Registered Patients ({patients.length})</h3>
-        
-        {/* 🚨 FIX 5: Use className="data-table card-shadow" for the table 🚨 */}
-        <table className="data-table card-shadow" style={{borderSpacing: '0 1px'}}>
-            <thead>
-                <tr style={{ backgroundColor: '#e9ecef' }}>
-                    <th className="data-table-header" style={{borderTopLeftRadius: '8px'}}>ID</th>
-                    <th className="data-table-header">Name</th>
-                    <th className="data-table-header">Email</th>
-                    <th className="data-table-header" style={{borderTopRightRadius: '8px'}}>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {patients.map(p => (
-                    <tr key={p.patient_id}>
-                        {/* 🚨 FIX 6: Use className="data-table-cell" 🚨 */}
-                        <td className="data-table-cell">{p.patient_id}</td>
-                        <td className="data-table-cell">
-                            {/* Link to profile page */}
-                            <Link to={`/patients/${p.patient_id}`} className="table-link">
-                                {p.first_name} {p.last_name}
-                            </Link>
-                        </td>
-                        <td className="data-table-cell">{p.email}</td>
-                        <td className="data-table-cell">[Edit | Delete]</td>
+            {error && <div className="error-msg">{error}</div>}
+
+            <h3 style={{ marginTop: '30px' }}>Registered Patients ({patients.length})</h3>
+            
+            <table className="data-table card-shadow">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Actions</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-);
+                </thead>
+                <tbody>
+                    {patients.map(p => (
+                        <tr key={p.patient_id}>
+                            <td>{p.patient_id}</td>
+                            <td>
+                                {editingId === p.patient_id ? (
+                                    <>
+                                        <input name="first_name" value={editFormData.first_name} onChange={handleEditChange} style={{width: '80px'}} />
+                                        <input name="last_name" value={editFormData.last_name} onChange={handleEditChange} style={{width: '80px'}} />
+                                    </>
+                                ) : (
+                                    <Link to={`/patients/${p.patient_id}`} className="table-link">
+                                        {p.first_name} {p.last_name}
+                                    </Link>
+                                )}
+                            </td>
+                            <td>
+                                {editingId === p.patient_id ? (
+                                    <input name="email" value={editFormData.email} onChange={handleEditChange} />
+                                ) : (
+                                    p.email
+                                )}
+                            </td>
+                            <td>
+                                {editingId === p.patient_id ? (
+                                    <>
+                                        <button onClick={() => saveEdit(p.patient_id)} className="btn-small">Save</button>
+                                        <button onClick={() => setEditingId(null)} className="btn-small">Cancel</button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => startEdit(p)} className="btn-small">Edit</button>
+                                        <button onClick={() => handleDelete(p.patient_id)} className="btn-small">Delete</button>
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 };
-
-/*const styles = {
-    button: { padding: '10px 15px', background: '#337ab7', color: 'white', border: 'none', cursor: 'pointer', marginBottom: '20px' },
-    saveButton: { padding: '10px 15px', background: '#5cb85c', color: 'white', border: 'none', cursor: 'pointer', marginTop: '10px' },
-    th: { border: '1px solid #ddd', padding: '12px', textAlign: 'left' },
-    td: { border: '1px solid #ddd', padding: '12px' },
-    table: { width: '100%', borderCollapse: 'collapse', marginTop: '10px' },
-    formContainer: { border: '1px solid #ddd', padding: '20px', marginBottom: '30px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' },
-    input: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }
-};*/
 
 export default PatientsPage;
