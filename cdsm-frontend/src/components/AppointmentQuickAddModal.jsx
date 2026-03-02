@@ -40,7 +40,7 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
         setStatusMessage('Scheduling...');
 
         if (!newAppt.doctor_id || !newAppt.appointment_time) {
-            setStatusMessage('❌ Doctor and Time are required.');
+            setStatusMessage('Failed: Doctor and Time are required.');
             return;
         }
 
@@ -55,34 +55,25 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
                 }
             });
             
-            setStatusMessage('✅ Appointment scheduled successfully!');
+            setStatusMessage('Appointment scheduled successfully!');
             onRefresh(); // Refresh the Patient Profile Page history
             setTimeout(onClose, 1500);
             
         } catch (err) {
             const errorMsg = err.response?.data?.message || JSON.stringify(err.response?.data?.errors) || 'An error occurred.';
-            setStatusMessage(`❌ Failed: ${errorMsg}`);
+            setStatusMessage(`Failed: ${errorMsg}`);
         }
     };
 
     return (
-        // 🚨 FIX 1: Use className="modal-backdrop" 🚨
         <div className="modal-backdrop">
-            {/* 🚨 FIX 2: Use className="modal-content card-shadow" 🚨 */}
             <div className="modal-content card-shadow">
-                
-                {/* 🚨 FIX 3: Use className="modal-header" 🚨 */}
                 <div className="modal-header">
                     <h3>New Appointment for Patient ID {patientId}</h3>
-                    
-                    {/* 🚨 FIX 4: Use className="modal-close-btn" */}
                     <button onClick={onClose} className="modal-close-btn">X</button>
                 </div>
-                
-                {/* 🚨 FIX 5: Use className="modal-form" */}
                 <form onSubmit={handleCreateAppt} className="modal-form">
-                    
-                    {/* 🚨 FIX 6: Use className="form-control" */}
+    
                     <select 
                         name="doctor_id" 
                         value={newAppt.doctor_id} 
@@ -98,7 +89,7 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
                         ))}
                     </select>
 
-                    {/* 🚨 FIX 7: Use className="form-control" */}
+                    
                     <input 
                         name="appointment_time" 
                         type="datetime-local" 
@@ -108,7 +99,7 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
                         className="form-control"
                     />
                     
-                    {/* 🚨 FIX 8: Use className="form-control" */}
+                
                     <textarea 
                         name="reason" 
                         placeholder="Reason for appointment" 
@@ -116,10 +107,9 @@ const AppointmentQuickAddModal = ({ onClose, auth, patientId, onRefresh }) => {
                         onChange={handleInputChange} 
                         className="form-control" 
                     />
-                    
-                    {/* 🚨 FIX 9: Use className="btn btn-primary" */}
+                
                     <button type="submit" className="btn btn-primary">Schedule Appointment</button>
-                    {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'red' : 'green', marginTop: '10px' }}>{statusMessage}</p>}
+                    {statusMessage && <p style={{ color: statusMessage.startsWith('Failed') ? 'red' : 'green', marginTop: '10px' }}>{statusMessage}</p>}
                 </form>
             </div>
         </div>

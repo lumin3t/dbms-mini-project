@@ -91,19 +91,18 @@ const AppointmentsPage = ({ auth }) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
-    // 🚨 FIX: Replace styles.padding with className="container" and use loading state 🚨
+    
     if (loading) return <div className="container">Loading Appointments...</div>;
     // Handle network errors
     if (networkError) return <div className="container login-error">Error: {networkError}</div>;
 
 
     return (
-        // 🚨 FIX: Replace styles.padding with className="container" 🚨
+ 
         <div className="container">
             <h1>Appointments Calendar</h1>
             
             {/* --- Filtering Controls --- */}
-            {/* 🚨 FIX: Replace styles.filtersContainer, styles.input with classNames 🚨 */}
             <div className="filters-container card-shadow">
                 <input 
                     type="date" 
@@ -138,10 +137,9 @@ const AppointmentsPage = ({ auth }) => {
             </div>
 
             {/* --- Appointments List/Timeline --- */}
-            {/* 🚨 FIX: Remove timeline style and add margin 🚨 */}
+  
             <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Showing {filteredAppointments.length} Appointments</h3>
             
-            {/* 🚨 FIX: Use a class for the timeline wrapper 🚨 */}
             <div className="appointment-timeline"> 
                 {filteredAppointments.length > 0 ? (
                     filteredAppointments.map(appt => (

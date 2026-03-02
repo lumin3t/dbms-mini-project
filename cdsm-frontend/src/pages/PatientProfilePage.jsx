@@ -235,7 +235,7 @@ const PatientProfilePage = ({ auth }) => {
                 </Section>
                 
                 {/* Uploaded Files */}
-                <Section title={`Documents (${documents.length})`} icon={<FileText size={20} />} className="section-small">
+<Section title={`Documents (${documents.length})`} icon={<FileText size={20} />} className="section-small">
                     {documents.length > 0 ? documents.map(d => (
                         <div key={d.document_id} className="section-content-item doc-item">
                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
@@ -245,20 +245,21 @@ const PatientProfilePage = ({ auth }) => {
                                         {d.document_type}
                                     </div>
                                 </div>
+                                {/* S3 SMART LINK: Detects if path is a URL or a local folder */}
                                 <a 
-                                    href={`http://localhost:5000/${d.file_path}`} 
+                                    href={d.file_path.startsWith('http') ? d.file_path : `http://localhost:5000/${d.file_path}`} 
                                     target="_blank" 
                                     rel="noopener noreferrer" 
                                     className="btn btn-secondary"
                                     style={{padding: '6px 12px', fontSize: '0.85em'}}
                                 >
-                                    View
+                                    View File
                                 </a>
                             </div>
                         </div>
                     )) : (
                         <div style={{textAlign: 'center', padding: '20px', color: 'var(--color-text-light)'}}>
-                            No files uploaded
+                            No files uploaded yet.
                         </div>
                     )}
                 </Section>

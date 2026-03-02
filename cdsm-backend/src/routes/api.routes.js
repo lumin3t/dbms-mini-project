@@ -13,7 +13,7 @@ const patientController = require('../controllers/patientController');
 const doctorController = require('../controllers/doctorController');
 const appointmentController = require('../controllers/appointmentController');
 const conditionController = require('../controllers/conditionController');
-const documentController = require('../controllers/documentController'); 
+const documentController = require('../controllers/documentController');
 const dashboardController = require('../controllers/dashboardController'); 
 
 // Test Route (Public)
@@ -60,7 +60,11 @@ router.get('/patients/:id/appointments', protect, appointmentController.getAppoi
 router.get('/dashboard/summary', protect, dashboardController.getDashboardSummary);
 
 // --- PROTECTED FILE UPLOAD ROUTE --- (OK)
+// Upload route: Calls middleware first, then the DB handler
 router.post('/upload', protect, documentController.uploadMiddleware, documentController.uploadDocument);
+
+// Global documents list for the UploadsPage
+router.get('/documents', protect, documentController.getAllDocuments);
 
 
 module.exports = router;

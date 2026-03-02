@@ -21,7 +21,7 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
         setStatusMessage('Uploading...');
 
         if (!file || !title) {
-            setStatusMessage('❌ Title and file are required.');
+            setStatusMessage('Failed: Title and file are required.');
             return;
         }
 
@@ -39,13 +39,13 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
                 },
             });
 
-            setStatusMessage('✅ File uploaded and saved successfully!');
+            setStatusMessage('File uploaded and saved successfully!');
             onRefresh(); // Refresh the Patient Profile Page history
             setTimeout(onClose, 1500);
             
         } catch (err) {
             const errorMsg = err.response?.data?.message || 'An upload error occurred.';
-            setStatusMessage(`❌ Failed: ${errorMsg}`);
+            setStatusMessage(`Failed: ${errorMsg}`);
             console.error(err.response || err);
         }
     };
@@ -55,24 +55,13 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
 // ... (component logic and imports above)
 
     return (
-        // 🚨 FIX 1: Use className="modal-backdrop" 🚨
         <div className="modal-backdrop">
-            
-            {/* 🚨 FIX 2: Use className="modal-content card-shadow" 🚨 */}
             <div className="modal-content card-shadow">
-                
-                {/* 🚨 FIX 3: Use className="modal-header" 🚨 */}
                 <div className="modal-header">
                     <h3>Upload Document for Patient ID {patientId}</h3>
-                    
-                    {/* 🚨 FIX 4: Use className="modal-close-btn" */}
                     <button onClick={onClose} className="modal-close-btn">X</button>
                 </div>
-                
-                {/* 🚨 FIX 5: Use className="modal-form" */}
                 <form onSubmit={handleUpload} className="modal-form">
-                    
-                    {/* 🚨 FIX 6: Use className="form-control" */}
                     <input 
                         name="title" 
                         placeholder="Document Title (e.g., Blood Test Results)" 
@@ -81,8 +70,6 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
                         required 
                         className="form-control"
                     />
-                    
-                    {/* 🚨 FIX 7: Use className="form-control" */}
                     <select 
                         name="documentType" 
                         value={documentType} 
@@ -95,77 +82,22 @@ const DocumentQuickUploadModal = ({ onClose, auth, patientId, onRefresh }) => {
                         <option value="Other">Other</option>
                     </select>
 
-                    {/* 🚨 FIX 8: Use className="form-control" (Note: Border removed via inline style for file input clarity) */}
                     <input 
                         type="file" 
                         onChange={handleFileUpload} 
                         required 
                         className="form-control"
-                        style={{ border: 'none', paddingLeft: 0 }} /* Adjusting style for file input */
+                        style={{ border: 'none', paddingLeft: 0 }} 
                     />
-                    
-                    {/* 🚨 FIX 9: Use className="btn btn-primary" */}
+                
                     <button type="submit" className="btn btn-primary">Upload File</button>
                     
                     {/* Status message remains inline for dynamic coloring */}
-                    {statusMessage && <p style={{ color: statusMessage.startsWith('❌') ? 'var(--color-danger)' : 'var(--color-success)', marginTop: '10px' }}>{statusMessage}</p>}
+                    {statusMessage && <p style={{ color: statusMessage.startsWith('Failed') ? 'var(--color-danger)' : 'var(--color-success)', marginTop: '10px' }}>{statusMessage}</p>}
                 </form>
             </div>
         </div>
     );
 };
-/*const styles = {
-    backdrop: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-    },
-    modal: {
-        backgroundColor: 'white',
-        padding: '30px',
-        borderRadius: '10px',
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
-        width: '90%',
-        maxWidth: '450px',
-    },
-    modalHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-        borderBottom: '1px solid #eee',
-        paddingBottom: '10px',
-    },
-    closeButton: {
-        background: 'none',
-        border: 'none',
-        fontSize: '1.2em',
-        cursor: 'pointer',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-    },
-    input: {
-        padding: '10px',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-    },
-    saveButton: {
-        padding: '10px',
-        backgroundColor: '#007bff',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-};*/
+
 export default DocumentQuickUploadModal;
